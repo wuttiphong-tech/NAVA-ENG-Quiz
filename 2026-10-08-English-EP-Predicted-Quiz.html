@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ข้อสอบคาดการณ์ EP สามเสน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=Sarabun:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<style>
+/* Layout: one centred column, like an exam booklet; answer choices drawn as OMR bubbles */
+:root{
+  --paper:#F3F5FA; --card:#FFFFFF; --ink:#1B2A4A; --muted:#5A6580; --line:#D6DCE8; --soft:#E9EDF5;
+  --accent:#C92A63; --accent-soft:#FBE3EC; --ok:#1C8253; --ok-soft:#DFF3E8; --bad:#C2362C; --bad-soft:#FBE4E1; --warn:#9A6200; --warn-soft:#FFF1D6;
+  --display:"Bai Jamjuree","Sarabun",system-ui,sans-serif; --body:"Sarabun","Tahoma",system-ui,sans-serif;
+  --r:12px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0F1522; --card:#182030; --ink:#E5EAF4; --muted:#9BA6BE; --line:#2B364A; --soft:#212B3D;
+  --accent:#F0679A; --accent-soft:#3A1F2C; --ok:#45C489; --ok-soft:#163327; --bad:#F2766B; --bad-soft:#3A1E1C; --warn:#F2B84B; --warn-soft:#3A2E14; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0F1522; --card:#182030; --ink:#E5EAF4; --muted:#9BA6BE; --line:#2B364A; --soft:#212B3D;
+  --accent:#F0679A; --accent-soft:#3A1F2C; --ok:#45C489; --ok-soft:#163327; --bad:#F2766B; --bad-soft:#3A1E1C; --warn:#F2B84B; --warn-soft:#3A2E14; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6;padding-inline:16px;padding-block:0 48px}
+.wrap{max-width:760px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.25}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,.opt:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.muted{color:var(--muted)}
+.btn{border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:.5em 1.1em;font-weight:600}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.45;cursor:default}
+/* home */
+.mast{padding-block:28px 18px;display:grid;gap:6px}
+.eyebrow{font-family:var(--display);font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.mast h1{font-size:clamp(1.7rem,5vw,2.4rem)}
+.modes{display:flex;flex-wrap:wrap;gap:10px;margin-block:14px 6px}
+.mode{flex:1 1 220px;text-align:left;border:1.5px solid var(--line);background:var(--card);border-radius:var(--r);padding:12px 14px;display:grid;gap:2px}
+.mode b{font-family:var(--display);font-size:1.05rem}
+.mode span{color:var(--muted);font-size:.9rem}
+.mode[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.year{font-family:var(--display);font-size:.85rem;color:var(--muted);letter-spacing:.08em;margin-block:22px 8px;font-weight:600}
+.sets{display:grid;gap:10px}
+.set{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:6px 14px;align-items:center}
+.set h3{font-size:1.08rem}
+.set .meta{display:flex;flex-wrap:wrap;gap:6px 10px;font-size:.88rem;color:var(--muted);align-items:center}
+.chip{display:inline-block;font-size:.78rem;padding:1px 9px;border-radius:999px;background:var(--soft);color:var(--muted);font-weight:600}
+.chip.claude{background:var(--warn-soft);color:var(--warn)}
+.score{font-family:var(--display);font-variant-numeric:tabular-nums;font-weight:700;color:var(--ink)}
+.set .acts{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+@media (max-width:520px){.set{grid-template-columns:1fr}.set .acts{flex-direction:row;flex-wrap:wrap}}
+.foot{margin-top:28px;font-size:.88rem;color:var(--muted)}
+/* quiz */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);border-bottom:1px solid var(--line);margin-inline:-16px;padding:10px 16px}
+.bar .in{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.bar .t{flex:1;min-width:0}
+.bar .t b{display:block;font-family:var(--display);font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .t small{color:var(--muted);font-variant-numeric:tabular-nums}
+.timer{font-family:var(--display);font-variant-numeric:tabular-nums;font-weight:700;padding:3px 10px;border-radius:8px;background:var(--soft)}
+.timer.low{background:var(--bad-soft);color:var(--bad)}
+.prog{height:4px;background:var(--soft);border-radius:4px;margin-top:8px;overflow:hidden;max-width:760px;margin-inline:auto}
+.prog i{display:block;height:100%;background:var(--accent);width:0;transition:width .2s}
+.dir{font-weight:700;font-size:.95rem;margin-block:18px 8px}
+.ctx{display:grid;gap:10px;margin-bottom:12px}
+.ctx .lab{font-family:var(--display);font-size:.85rem;color:var(--accent);font-weight:600}
+.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;font-size:.98rem}
+.box p{margin:0 0 .45em}
+.box p:last-child{margin-bottom:0}
+.box .bt{font-weight:700;text-align:center}
+.box .src{font-size:.82rem;color:var(--muted);font-style:italic;text-align:right}
+.box .sp{display:grid;grid-template-columns:7.5em 1fr;gap:8px}
+@media (max-width:520px){.box .sp{grid-template-columns:1fr;gap:0}}
+.ctx img,.stem img{display:block;max-width:100%;height:auto;border-radius:8px;background:#fff;border:1px solid var(--line);margin-block:6px}
+.q{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.qn{font-family:var(--display);font-weight:700;color:var(--accent);font-size:1.05rem}
+.stem p{margin:.2em 0}
+.stem u,.box u,.opt u{text-decoration-thickness:1.5px;text-underline-offset:3px}
+sup{color:var(--accent);font-weight:700;font-size:.72em;margin-left:1px}
+.opts{display:grid;gap:8px;margin-top:12px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;border:1.5px solid var(--line);background:transparent;border-radius:10px;padding:9px 12px}
+.opt:hover:not(:disabled){border-color:var(--muted)}
+.bub{flex:none;width:28px;height:28px;border-radius:50%;border:1.8px solid var(--muted);display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:.9rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.opt .ot{padding-top:1px;min-width:0}
+.opt.sel{border-color:var(--ink)}
+.opt.sel .bub{background:var(--ink);border-color:var(--ink);color:var(--card)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.right .bub{background:var(--ok);border-color:var(--ok);color:#fff}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt.wrong .bub{background:var(--bad);border-color:var(--bad);color:#fff}
+.opt:disabled{cursor:default}
+.note{font-size:.85rem;color:var(--muted);margin-top:6px}
+.fb{margin-top:12px;border-radius:10px;padding:12px 14px;display:grid;gap:4px}
+.fb.ok{background:var(--ok-soft)} .fb.no{background:var(--bad-soft)}
+.fb b{font-family:var(--display)}
+.fb.ok b{color:var(--ok)} .fb.no b{color:var(--bad)}
+.warnline{font-size:.85rem;color:var(--warn)}
+.nav{display:flex;gap:10px;justify-content:space-between;margin-top:16px;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:6px;margin-top:18px}
+.grid button{border:1.5px solid var(--line);background:var(--card);border-radius:8px;padding:5px 0;font-size:.85rem;font-variant-numeric:tabular-nums;font-weight:600}
+.grid button.done{background:var(--soft);border-color:var(--muted)}
+.grid button.cur{border-color:var(--accent);color:var(--accent)}
+.grid button.r{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.grid button.w{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.confirm{margin-top:14px;border:1.5px solid var(--accent);background:var(--accent-soft);border-radius:var(--r);padding:14px;display:grid;gap:10px}
+.confirm .row{display:flex;gap:10px;flex-wrap:wrap}
+/* result */
+.res-head{padding-block:26px 10px;display:grid;gap:8px}
+.big{font-family:var(--display);font-size:clamp(2.6rem,10vw,3.6rem);font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.big small{font-size:.4em;color:var(--muted);font-weight:600}
+.stats{display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--muted);font-size:.92rem}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-block:16px 10px}
+.filters .btn[aria-pressed="true"]{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.rv{display:grid;gap:12px}
+.rv .q{padding:14px}
+.rvh{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tag{font-size:.8rem;font-weight:700;padding:1px 9px;border-radius:999px}
+.tag.ok{background:var(--ok-soft);color:var(--ok)} .tag.no{background:var(--bad-soft);color:var(--bad)} .tag.skip{background:var(--soft);color:var(--muted)}
+details.ctxd{margin-top:8px} details.ctxd summary{cursor:pointer;color:var(--muted);font-size:.88rem}
+.notice{background:var(--card);border:2px solid var(--ink);border-radius:10px;padding:12px 16px;font-size:.95rem;max-width:560px}
+.notice .nt{font-family:var(--display);font-weight:700;letter-spacing:.04em;margin-bottom:6px}
+.notice .nt.big{font-size:1.8rem;color:var(--accent);text-align:center}
+.notice p{margin:.3em 0}.notice .nf{font-size:.85rem;color:var(--muted)}
+.notice.poster{text-align:center;border-style:dashed}
+.tt{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;margin-block:4px}
+.tt th,.tt td{border:1px solid var(--line);padding:4px 8px;text-align:left}.tt th{background:var(--soft)}
+.tbl{overflow-x:auto}
+.rules{margin:.2em 0;padding-left:1.2em}
+.chart{margin:0;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;max-width:560px}
+.chart figcaption{font-weight:700;font-size:.92rem;margin-bottom:4px}
+.chart svg{width:100%;height:auto;display:block}
+.chart .ax line{stroke:var(--ink);stroke-width:1.2}.chart .gl line{stroke:var(--line);stroke-width:1}
+.chart .br rect,.chart .k1{fill:var(--accent)}
+.chart .br2 rect,.chart .k2{fill:var(--ink);opacity:.55}
+.chart text{fill:var(--ink);font-family:var(--body);font-size:11px}
+.chart .yl text{text-anchor:end;fill:var(--muted)}.chart .hl text{text-anchor:end}
+.chart .vl text{text-anchor:middle;font-weight:700}.chart .vl.l text{text-anchor:start}
+.chart .xl text{text-anchor:middle}
+.chart .nf{font-size:.82rem;color:var(--muted);margin:.2em 0 0}
+.topic{display:inline-block;font-size:.75rem;padding:1px 8px;border-radius:999px;background:var(--soft);color:var(--muted);font-weight:600;margin-left:6px;vertical-align:middle}
+.tops{display:grid;gap:6px;margin-block:8px 4px}
+.trow{display:grid;grid-template-columns:minmax(0,11em) 1fr 3.4em;gap:10px;align-items:center;font-size:.9rem}
+.trow .tb{height:10px;border-radius:6px;background:var(--soft);overflow:hidden}
+.trow .tb i{display:block;height:100%;background:var(--ok)}
+.trow.weak .tb i{background:var(--bad)}
+.trow .tv{font-variant-numeric:tabular-nums;text-align:right;color:var(--muted)}
+@media (max-width:520px){.trow{grid-template-columns:minmax(0,8.5em) 1fr 3em}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script id="data" type="application/json">[{"groups": [{"l": "For items 11 – 13", "h": "<div class=\"box\"><p class=\"bt\">Bees Can Count<\/p><p>Scientists have discovered that honeybees are smarter than anyone ____(11)____. In a recent experiment, bees were trained to choose cards with fewer shapes on them. Each time a bee made the right choice, it ____(12)____ with a drop of sugar water. After a few days, the bees could even understand the idea of \"zero\", ____(13)____ many young children find difficult.<\/p><\/div>"}, {"l": "For items 14 – 16", "h": "<div class=\"box\"><p class=\"bt\">A Floating Market Goes Digital<\/p><p>For more than a hundred years, the floating market at Damnoen Saduak ____(14)____ tourists from around the world. Recently, however, many sellers have started accepting payments through QR codes. \"Most tourists don't carry cash anymore,\" explains Mrs. Somjai, who sells coconut pancakes from her boat. \"If I ____(15)____ QR payments, I would lose half of my customers.\" Some older sellers, ____(16)____, still prefer to be paid in cash.<\/p><\/div>"}, {"l": "For items 17 – 19", "h": "<div class=\"box\"><p>\"The more that you read, the more things you will know. The more that you learn, the more places you'll go.\" These famous lines by Dr. Seuss remind us that reading is not only fun but also ____(17)____. Research shows that children who read for twenty minutes a day ____(18)____ to nearly two million words a year. Reading ____(19)____ also helps young people understand other people's feelings.<\/p><\/div>"}, {"l": "For items 20 – 22", "h": "<div class=\"box\"><p>Thailand's elephants once worked in the forests, carrying heavy logs for the timber industry. When logging was banned in 1989, thousands of elephants and their mahouts suddenly ____(20)____ their jobs. Many of them ended up ____(21)____ the streets of Bangkok, which was dangerous for both people and animals. Today, several sanctuaries care for retired elephants, ____(22)____ visitors can watch them bathe and play instead of riding them.<\/p><\/div>"}, {"l": "For items 36 – 37", "h": "<div class=\"box\"><p class=\"sp\"><b>Librarian:<\/b><span>Good morning. ____(36)____<\/span><\/p><p class=\"sp\"><b>Student:<\/b><span>Yes, I'm looking for a book about climate change for my report.<\/span><\/p><p class=\"sp\"><b>Librarian:<\/b><span>We have several. Are you looking for something simple or more detailed?<\/span><\/p><p class=\"sp\"><b>Student:<\/b><span>Something detailed, please. ____(37)____<\/span><\/p><p class=\"sp\"><b>Librarian:<\/b><span>Then try \"Our Warming Planet\". It's on the second floor, next to the atlases.<\/span><\/p><\/div>"}, {"l": "For items 38 – 40", "h": "<div class=\"box\"><p class=\"sp\"><b>Mina:<\/b><span>Hi, Leo! ____(38)____ I haven't seen you since the summer holidays.<\/span><\/p><p class=\"sp\"><b>Leo:<\/b><span>I know! I've been really busy. I joined the school robotics team.<\/span><\/p><p class=\"sp\"><b>Mina:<\/b><span>Really? ____(39)____<\/span><\/p><p class=\"sp\"><b>Leo:<\/b><span>It's challenging, but I love it. We're building a robot that can sort rubbish for recycling.<\/span><\/p><p class=\"sp\"><b>Mina:<\/b><span>That sounds amazing. ____(40)____<\/span><\/p><p class=\"sp\"><b>Leo:<\/b><span>Sure! We meet every Wednesday after school in the science lab. Just come along.<\/span><\/p><\/div>"}, {"l": "For items 41 – 43", "h": "<div class=\"box\"><p class=\"bt\">The Girl Who Fought Plastic Bags<\/p><p>In 2013, when Melati and Isabel Wijsen were just 12 and 10 years old, they learned in a school lesson about people who had changed the world, such as Nelson Mandela and Mahatma Gandhi. Instead of feeling that they were too young to make a difference, the sisters asked themselves, \"What can we do now, here on our island of Bali?\"<\/p><p>Their answer was plastic bags. Bali was producing hundreds of tons of plastic waste every day, and much of it ended up on beaches and in the sea. The sisters started a campaign called \"Bye Bye Plastic Bags\". At first, adults did not take them seriously. They collected signatures, gave talks at schools and even went on a hunger strike from sunrise to sunset until the governor agreed to meet them.<\/p><p>Their efforts paid off. In 2019, Bali officially banned single-use plastic bags, straws and foam containers. Today, the sisters travel the world encouraging young people to start their own projects. As Melati says, \"You don't have to be an adult to be a leader.\"<\/p><\/div>"}, {"l": "For items 44 – 46", "h": "<div class=\"box\"><p>Why do onions make us cry? When you cut an onion, you break open tiny cells inside it. These cells release a chemical that turns into a gas called syn-propanethial-S-oxide. When this gas reaches your eyes, it reacts with the water there to form a mild acid. Your eyes then produce tears to wash the acid away.<\/p><p>There are a few ways to reduce the problem. Chilling the onion in the fridge for thirty minutes slows down the chemical reaction. Using a very sharp knife also helps, because it damages fewer cells. Some people even wear swimming goggles while cooking, although this may look rather strange!<\/p><\/div>"}, {"l": "For items 47 – 49", "h": "<div class=\"box\"><p class=\"bt\">The 15-Minute City<\/p><p>Imagine a city where you can reach your school, a supermarket, a park and a hospital within fifteen minutes by walking or cycling. This is the idea of the \"15-minute city\", developed by Professor Carlos Moreno in Paris. Supporters say it reduces traffic and air pollution, gives people more free time and helps neighbours get to know one another.<\/p><p>However, not everyone is convinced. Critics argue that the idea works better in old European cities, where shops and homes are already close together, than in cities that were built around cars. Others worry that it could be expensive to build new services in every neighbourhood.<\/p><\/div>"}, {"l": "For item 50", "h": "<div class=\"notice\"><div class=\"nt\">SAMSEN SCIENCE FAIR 2027 · CALL FOR PROJECTS<\/div><p>Teams of <b>2–4 students<\/b> from M.1–M.3 are invited to submit a project.<br>Topic: <b>\"Smart Solutions for a Greener School\"<\/b><\/p><table class=\"tt\"><tr><th>Step<\/th><th>Deadline<\/th><\/tr><tr><td>Register your team online<\/td><td>15 November<\/td><\/tr><tr><td>Submit a one-page proposal<\/td><td>29 November<\/td><\/tr><tr><td>Present your project at the fair<\/td><td>17 January<\/td><\/tr><\/table><p class=\"nf\">Projects must use recycled materials. Late proposals will not be accepted.<br>Prizes: 1st – 5,000 baht · 2nd – 3,000 baht · 3rd – 2,000 baht<\/p><\/div>"}, {"l": "For items 51 – 52", "h": "<figure class=\"chart\"><figcaption>Average screen time per day of M.1 students (hours)<\/figcaption><svg viewBox=\"0 0 390 210\" role=\"img\" aria-label=\"bar chart\"><g class=\"ax\"><line x1=\"44\" y1=\"20\" x2=\"44\" y2=\"170\"/><line x1=\"44\" y1=\"170\" x2=\"350\" y2=\"170\"/><\/g><g class=\"gl\"><line x1=\"44\" y1=\"132.5\" x2=\"350\" y2=\"132.5\"/><line x1=\"44\" y1=\"95\" x2=\"350\" y2=\"95\"/><line x1=\"44\" y1=\"57.5\" x2=\"350\" y2=\"57.5\"/><line x1=\"44\" y1=\"20\" x2=\"350\" y2=\"20\"/><\/g><g class=\"yl\"><text x=\"38\" y=\"174\">0<\/text><text x=\"38\" y=\"136\">2<\/text><text x=\"38\" y=\"99\">4<\/text><text x=\"38\" y=\"61\">6<\/text><text x=\"38\" y=\"24\">8<\/text><\/g><g class=\"br\"><rect x=\"60\" y=\"113.75\" width=\"30\" height=\"56.25\"/><rect x=\"140\" y=\"95\" width=\"30\" height=\"75\"/><rect x=\"220\" y=\"76.25\" width=\"30\" height=\"93.75\"/><\/g><g class=\"br2\"><rect x=\"92\" y=\"95\" width=\"30\" height=\"75\"/><rect x=\"172\" y=\"57.5\" width=\"30\" height=\"112.5\"/><rect x=\"252\" y=\"38.75\" width=\"30\" height=\"131.25\"/><\/g><g class=\"vl\"><text x=\"75\" y=\"108\">3<\/text><text x=\"107\" y=\"89\">4<\/text><text x=\"155\" y=\"89\">4<\/text><text x=\"187\" y=\"52\">6<\/text><text x=\"235\" y=\"70\">5<\/text><text x=\"267\" y=\"33\">7<\/text><\/g><g class=\"xl\"><text x=\"91\" y=\"188\">2023<\/text><text x=\"171\" y=\"188\">2024<\/text><text x=\"251\" y=\"188\">2025<\/text><\/g><g class=\"lg\"><rect x=\"296\" y=\"30\" width=\"10\" height=\"10\" class=\"k1\"/><text x=\"310\" y=\"39\">Weekdays<\/text><rect x=\"296\" y=\"48\" width=\"10\" height=\"10\" class=\"k2\"/><text x=\"310\" y=\"57\">Weekends<\/text><\/g><\/svg><\/figure>"}, {"l": "For item 53", "h": "<div class=\"notice\"><div class=\"nt\">PLEASE READ BEFORE USING THE 3D PRINTER<\/div><ul class=\"rules\"><li>Book a time slot with Ms. Dao at least <b>one day in advance<\/b>.<\/li><li>Students must complete the safety training before printing alone.<\/li><li>Maximum printing time: <b>2 hours<\/b> per student per week.<\/li><li>Do not touch the nozzle — it can reach 210°C.<\/li><li>Report any problems immediately. Do not try to fix the printer yourself.<\/li><\/ul><\/div>"}, {"l": "For item 54", "h": "<div class=\"notice poster\"><div class=\"nt big\">LOST &amp; FOUND<\/div><p>Items found in the school hall after the concert on Friday:<br>a black umbrella · a pair of glasses in a blue case · a silver water bottle<\/p><p class=\"nf\">To claim an item, describe it to Mr. Krit at the student office.<br>Items not claimed by the end of the month will be given to charity.<\/p><\/div>"}], "qs": [{"n": "1", "alt": "", "d": "Directions: Choose the best alternative to complete each blank.", "g": -1, "s": "<p>Kai: You look exhausted. What ________ all afternoon?<\/p><p>Mai: I ________ my science project. I've finished the poster, but I still haven't written the report.<\/p>", "o": ["have you been doing / have been working on", "did you do / worked on", "were you doing / have worked on", "have you done / was working on"], "note": "", "t": "Tenses", "a": 1, "x": "ถามและตอบถึงกิจกรรมที่ทำต่อเนื่องมาจนถึงตอนนี้ และเห็นผลอยู่ (ดูเหนื่อย) → Present Perfect Continuous ทั้งคำถามและคำตอบ"}, {"n": "2", "alt": "", "d": "", "g": -1, "s": "<p>By the time we ________ at the stadium, the match ________ for twenty minutes, so we missed the first goal.<\/p>", "o": ["arrive / has been going on", "had arrived / was going on", "arrived / had been going on", "were arriving / went on"], "note": "", "t": "Tenses", "a": 3, "x": "เหตุการณ์ที่ดำเนินมาก่อนอีกเหตุการณ์ในอดีต (By the time we arrived) → Past Perfect Continuous: had been going on"}, {"n": "3", "alt": "", "d": "", "g": -1, "s": "<p>If Nina ________ her passport last night, she ________ on the plane to Japan right now.<\/p>", "o": ["had packed / would have been", "packed / would be", "packs / will be", "had packed / would be"], "note": "", "t": "Conditionals & wish", "a": 4, "x": "Mixed conditional: เงื่อนไขในอดีต (last night → had packed) ส่งผลถึงปัจจุบัน (right now → would be)"}, {"n": "4", "alt": "", "d": "", "g": -1, "s": "<p>Ploy: I wish my little brother ________ playing his drums at midnight. I can't sleep!<\/p>", "o": ["will stop", "would stop", "stops", "has stopped"], "note": "", "t": "Conditionals & wish", "a": 2, "x": "wish + would + V1 = อยากให้คนอื่นเลิกทำพฤติกรรมที่น่ารำคาญ"}, {"n": "5", "alt": "", "d": "", "g": -1, "s": "<p>The lights in Mr. Lee's house are off and his car isn't in the garage. He ________ out for dinner.<\/p>", "o": ["needn't have gone", "should have gone", "must have gone", "can't have gone"], "note": "", "t": "Modals", "a": 3, "x": "สรุปอย่างมั่นใจจากหลักฐานเกี่ยวกับเรื่องที่เกิดไปแล้ว → must have + V3"}, {"n": "6", "alt": "", "d": "", "g": -1, "s": "<p>\"Have you ever been to Chiang Rai?\" the new student asked me.<\/p><p>→ The new student asked me ________ to Chiang Rai.<\/p>", "o": ["had I ever been", "if I have ever been", "whether had I ever been", "if I had ever been"], "note": "", "t": "Sentence structure", "a": 4, "x": "คำถาม Yes/No ทางอ้อมใช้ if/whether + เรียงประโยคแบบบอกเล่า และเลื่อน tense (have been → had been)"}, {"n": "7", "alt": "", "d": "", "g": -1, "s": "<p>The old bridge, which ________ in 1932, ________ at the moment because cracks were found last month.<\/p>", "o": ["was built / is being repaired", "has been built / has been repaired", "was building / is repairing", "built / is repaired"], "note": "", "t": "Passive & causative", "a": 1, "x": "สะพาน \"ถูกสร้าง\" ในปี 1932 → was built; \"กำลังถูกซ่อม\" ตอนนี้ → is being repaired"}, {"n": "8", "alt": "", "d": "", "g": -1, "s": "<p>Not only ________ the national science olympiad, but she also received a scholarship to study abroad.<\/p>", "o": ["won she", "did she win", "she won", "she did win"], "note": "", "t": "Sentence structure", "a": 2, "x": "ประโยคขึ้นต้นด้วย Not only ต้องสลับกริยาช่วยมาไว้หน้าประธาน (inversion) → did she win"}, {"n": "9", "alt": "", "d": "", "g": -1, "s": "<p>I'll never forget ________ the Northern Lights for the first time, so I've decided ________ to Norway again next winter.<\/p>", "o": ["seeing / to go", "to see / to go", "seeing / going", "to see / going"], "note": "", "t": "Gerund & infinitive", "a": 1, "x": "forget + V-ing = ลืมไม่ลงว่าเคยทำ; decide + to V1"}, {"n": "10", "alt": "", "d": "", "g": -1, "s": "<p>The scientist ________ research on plastic-eating bacteria won the prize is the person ________ I told you about yesterday.<\/p>", "o": ["which / who", "whose / whom", "whose / which", "who / whom"], "note": "", "t": "Sentence structure", "a": 2, "x": "งานวิจัย \"ของ\" นักวิทยาศาสตร์ → whose; เป็นกรรมของ about (I told you about him) → whom"}, {"n": "11", "alt": "", "d": "", "g": 0, "s": "", "o": ["is expecting", "will expect", "has expected", "had expected"], "note": "", "t": "Tenses", "a": 4, "x": "การคาดไว้เกิดขึ้นก่อนการค้นพบ (Scientists have discovered…) และใช้กับ than anyone… → had expected (ทุกคนเคยคาดไว้ก่อนหน้านี้)"}, {"n": "12", "alt": "", "d": "", "g": 0, "s": "", "o": ["has rewarded", "rewarded", "was rewarded", "was rewarding"], "note": "", "t": "Passive & causative", "a": 3, "x": "ผึ้ง \"ได้รับรางวัล\" (ถูกให้รางวัล) → Passive: was rewarded"}, {"n": "13", "alt": "", "d": "", "g": 0, "s": "", "o": ["who", "which", "what", "that"], "note": "", "t": "Sentence structure", "a": 2, "x": "ขยายทั้งความคิดก่อนหน้า (the idea of \"zero\") หลังเครื่องหมายจุลภาค → which (หลังจุลภาคใช้ that ไม่ได้)"}, {"n": "14", "alt": "", "d": "", "g": 1, "s": "", "o": ["is attracting", "attracts", "has attracted", "attracted"], "note": "", "t": "Tenses", "a": 3, "x": "For more than a hundred years (ต่อเนื่องถึงปัจจุบัน) → Present Perfect: has attracted"}, {"n": "15", "alt": "", "d": "", "g": 1, "s": "", "o": ["didn't accept", "won't accept", "hadn't accepted", "don't accept"], "note": "", "t": "Conditionals & wish", "a": 1, "x": "ประโยคหลัง would lose → If-clause แบบที่ 2 (สมมติขัดกับความจริงตอนนี้) → didn't accept"}, {"n": "16", "alt": "", "d": "", "g": 1, "s": "", "o": ["therefore", "otherwise", "moreover", "however"], "note": "", "t": "Linking words & prepositions", "a": 4, "x": "ขัดแย้งกับประโยคก่อนหน้า (คนส่วนใหญ่รับ QR แต่บางคนยังชอบเงินสด) → however"}, {"n": "17", "alt": "", "d": "", "g": 2, "s": "", "o": ["useful", "usefully", "usefulness", "use"], "note": "", "t": "Adjectives, adverbs & comparison", "a": 1, "x": "not only + adj (fun) but also + adj → useful (ต้องขนานกัน)"}, {"n": "18", "alt": "", "d": "", "g": 2, "s": "", "o": ["exposed", "have exposed", "expose", "are exposed"], "note": "", "t": "Passive & causative", "a": 4, "x": "เด็ก \"ได้สัมผัส\" คำศัพท์ (ถูกให้สัมผัส) → be exposed to; ข้อเท็จจริงทั่วไป → are exposed"}, {"n": "19", "alt": "", "d": "", "g": 2, "s": "", "o": ["regular", "regularly", "regularity", "regulate"], "note": "", "t": "Adjectives, adverbs & comparison", "a": 2, "x": "ขยายกริยา Reading (การอ่านอย่างสม่ำเสมอ) → adverb: regularly"}, {"n": "20", "alt": "", "d": "", "g": 3, "s": "", "o": ["have lost", "lose", "lost", "had been losing"], "note": "", "t": "Tenses", "a": 3, "x": "เหตุการณ์ในอดีตเมื่อมีการห้ามในปี 1989 → lost"}, {"n": "21", "alt": "", "d": "", "g": 3, "s": "", "o": ["wandering", "to wander", "wandered", "wander"], "note": "", "t": "Gerund & infinitive", "a": 1, "x": "end up + V-ing = ลงเอยด้วยการ…"}, {"n": "22", "alt": "", "d": "", "g": 3, "s": "", "o": ["which", "that", "when", "where"], "note": "", "t": "Sentence structure", "a": 4, "x": "ขยายสถานที่ (sanctuaries) ตามด้วยประโยคสมบูรณ์ → where"}, {"n": "23", "alt": "", "d": "Directions: Choose the best alternative to complete each sentence.", "g": -1, "s": "<p>The government has ________ a new law that requires all drivers to wear seatbelts, even in the back seat.<\/p>", "o": ["seduced", "reduced", "introduced", "produced"], "note": "", "t": "Vocabulary", "a": 3, "x": "introduce a law = ออกกฎหมายใหม่"}, {"n": "24", "alt": "", "d": "", "g": -1, "s": "<p>Living in a ________ city can be stressful because of the noise, traffic and crowds.<\/p>", "o": ["peaceful", "densely populated", "rural", "deserted"], "note": "", "t": "Vocabulary", "a": 2, "x": "densely populated = มีประชากรหนาแน่น ตรงกับเสียงดัง รถติด คนเยอะ"}, {"n": "25", "alt": "", "d": "", "g": -1, "s": "<p>The documentary gave a(n) ________ picture of life in the Arctic. Everything in it was accurate and true.<\/p>", "o": ["authentic", "artificial", "exaggerated", "fictional"], "note": "", "t": "Vocabulary", "a": 1, "x": "authentic = ของแท้ ถูกต้องตามจริง (ประโยคหลังบอกว่าถูกต้องและจริงทุกอย่าง)"}, {"n": "26", "alt": "", "d": "", "g": -1, "s": "<p>The school had to ________ the sports day because of the heavy storm. It will now be held next month.<\/p>", "o": ["set up", "call off", "carry on", "put off"], "note": "", "t": "Idioms & phrasal verbs", "a": 4, "x": "put off = เลื่อนออกไป (ยังจัดแต่จัดภายหลัง) ส่วน call off = ยกเลิกเลย"}, {"n": "27", "alt": "", "d": "", "g": -1, "s": "<p>I was so nervous before my speech, but my friends' cheering really helped me ________.<\/p>", "o": ["look down on it", "get over it", "give it up", "run out of it"], "note": "", "t": "Idioms & phrasal verbs", "a": 2, "x": "get over = ผ่านพ้น/หายจาก (ความประหม่า)"}, {"n": "28", "alt": "", "d": "", "g": -1, "s": "<p>Ken: Did you finish the project?<\/p><p>Tim: Not yet. I've been working on it all day, so I think I'll ________ and get some sleep.<\/p>", "o": ["hit the sack early tomorrow", "break a leg", "call it a day", "spill the beans"], "note": "", "t": "Idioms & phrasal verbs", "a": 3, "x": "call it a day = พอแค่นี้ก่อนสำหรับวันนี้ (spill the beans = เผยความลับ, break a leg = ขอให้โชคดี)"}, {"n": "29", "alt": "", "d": "", "g": -1, "s": "<p>Which sentence uses the underlined word with the <b>closest meaning<\/b> to the one below?<\/p><p>Please <u>address<\/u> all your questions to the class teacher.<\/p>", "o": ["We need to <u>address<\/u> the problem of food waste.", "You should <u>address<\/u> your letter to the manager.", "The president will <u>address<\/u> the nation tonight.", "What is your home <u>address<\/u>?"], "note": "", "t": "Vocabulary", "a": 2, "x": "address (v.) ในโจทย์ = ส่ง (คำถาม/จดหมาย) ไปถึงคนใดคนหนึ่ง ตรงกับ address your letter to… (ข้อ 3 = กล่าวสุนทรพจน์, ข้อ 1 = จัดการแก้ปัญหา)"}, {"n": "30", "alt": "", "d": "", "g": -1, "s": "<p>Which sentence uses the underlined word with the <b>closest meaning<\/b> to the one below?<\/p><p>The tickets for the concert were sold out within minutes. They were in great <u>demand<\/u>.<\/p>", "o": ["There is a growing <u>demand<\/u> for electric cars.", "Workers went on strike to <u>demand<\/u> higher pay.", "This job <u>demands<\/u> a lot of patience.", "The teacher <u>demanded<\/u> an explanation."], "note": "", "t": "Vocabulary", "a": 1, "x": "demand (n.) = ความต้องการ (ของตลาด/ผู้ซื้อ) ตรงกับ demand for electric cars"}, {"n": "31", "alt": "", "d": "Directions: Choose the best response for each situation.", "g": -1, "s": "<p>Your friend has been chosen to represent the school in an international debate competition. You say, \"________\"<\/p>", "o": ["Never mind. Maybe next time.", "I'm afraid I can't make it.", "It's not a big deal, is it?", "That's a huge achievement. You totally deserve it!"], "note": "", "t": "Conversation", "a": 4, "x": "แสดงความยินดีกับความสำเร็จ"}, {"n": "32", "alt": "", "d": "", "g": -1, "s": "<p>A: Would you like me to give you a lift to the station?<\/p><p>B: ________ I'd rather walk. It's such a lovely day.<\/p>", "o": ["Yes, I'd love to.", "No, I'm not.", "That's very kind of you, but there's no need.", "Sure, go ahead."], "note": "", "t": "Conversation", "a": 3, "x": "ปฏิเสธข้อเสนออย่างสุภาพ แล้วบอกเหตุผลว่าอยากเดิน"}, {"n": "33", "alt": "", "d": "", "g": -1, "s": "<p>A: I can't believe I failed the audition again. I'm never going to be a singer.<\/p><p>B: ________<\/p>", "o": ["Don't be so hard on yourself. Every great singer failed at first.", "I told you so.", "You're right. You should give up.", "Congratulations! I knew you could do it."], "note": "", "t": "Conversation", "a": 1, "x": "ให้กำลังใจอย่างเหมาะสม (Don't be so hard on yourself = อย่าโทษตัวเองนัก)"}, {"n": "34", "alt": "", "d": "", "g": -1, "s": "<p>A: I think students should be allowed to use phones during lunch break.<\/p><p>B: ________ Some students might spend the whole break on social media instead of talking to friends.<\/p>", "o": ["You took the words right out of my mouth.", "I see your point, but I'm not so sure.", "That's exactly what I think.", "I couldn't agree more."], "note": "", "t": "Conversation", "a": 2, "x": "ประโยคต่อมาแสดงความกังวล/ไม่เห็นด้วย จึงต้องเป็นการแย้งอย่างสุภาพ (ข้ออื่นเห็นด้วยทั้งหมด)"}, {"n": "35", "alt": "", "d": "", "g": -1, "s": "<p>You are at a restaurant and your soup is cold. You say to the waiter, \"________\"<\/p>", "o": ["Your soup is terrible. I'm leaving.", "I'd like a cold soup, please.", "Can I have the bill for the soup?", "Excuse me, could you heat up my soup, please? It's a bit cold."], "note": "", "t": "Conversation", "a": 4, "x": "ร้องเรียนอย่างสุภาพและขอให้แก้ไข"}, {"n": "36", "alt": "", "d": "", "g": 4, "s": "", "o": ["Would you like to borrow my pen?", "Have you returned your books?", "Can I help you find anything?", "What are you doing here?"], "note": "", "t": "Conversation", "a": 3, "x": "นักเรียนตอบว่ากำลังหาหนังสือ → บรรณารักษ์เสนอความช่วยเหลือ"}, {"n": "37", "alt": "", "d": "", "g": 4, "s": "", "o": ["I need to include some statistics and graphs.", "I'm in a hurry to go home.", "I've already finished my report.", "I don't like reading at all."], "note": "", "t": "Conversation", "a": 1, "x": "ให้เหตุผลว่าทำไมต้องการหนังสือละเอียด (ต้องใช้สถิติและกราฟ)"}, {"n": "38", "alt": "", "d": "", "g": 5, "s": "", "o": ["How do you do?", "Long time no see!", "Nice to meet you.", "See you later!"], "note": "", "t": "Conversation", "a": 2, "x": "เจอกันหลังจากไม่ได้เจอนาน → Long time no see!"}, {"n": "39", "alt": "", "d": "", "g": 5, "s": "", "o": ["Who is your teacher?", "Why did you leave it?", "When did it finish?", "How do you like it so far?"], "note": "", "t": "Conversation", "a": 4, "x": "Leo ตอบความรู้สึกต่อกิจกรรม (ท้าทายแต่ชอบ) → How do you like it so far?"}, {"n": "40", "alt": "", "d": "", "g": 5, "s": "", "o": ["Can you lend me your robot?", "What time is it now?", "Do you think I could join too?", "Why don't you give up?"], "note": "", "t": "Conversation", "a": 3, "x": "Leo ตอบ \"Sure! … Just come along.\" → Mina ขอเข้าร่วมด้วย"}, {"n": "41", "alt": "", "d": "Directions: Read the passages and choose the best answer.", "g": 6, "s": "<p>What inspired the sisters to start their campaign?<\/p>", "o": ["A school lesson about world-changing people", "A speech by Nelson Mandela in Bali", "A visit to a beach full of rubbish", "A meeting with the governor of Bali"], "note": "", "t": "Reading", "a": 1, "x": "ย่อหน้าแรก: ได้แรงบันดาลใจจากบทเรียนในโรงเรียนเรื่องบุคคลที่เปลี่ยนโลก"}, {"n": "42", "alt": "", "d": "", "g": 6, "s": "<p>The phrase \"<b>paid off<\/b>\" in paragraph 3 is closest in meaning to ________.<\/p>", "o": ["were cancelled", "were successful", "cost a lot of money", "became famous"], "note": "", "t": "Reading", "a": 2, "x": "pay off (สำนวน) = ได้ผล ประสบความสำเร็จ (ตามด้วยการที่บาหลีออกกฎห้ามจริง)"}, {"n": "43", "alt": "", "d": "", "g": 6, "s": "<p>Which statement can be <b>inferred<\/b> from the passage?<\/p>", "o": ["Plastic bags are still allowed everywhere in Bali.", "Adults immediately supported the sisters' idea.", "Persistence helped the sisters reach their goal.", "The sisters stopped their campaign after 2019."], "note": "", "t": "Reading", "a": 3, "x": "ตอนแรกผู้ใหญ่ไม่สนใจ แต่ทั้งคู่ยังทำต่อ (ล่ารายชื่อ บรรยาย อดอาหาร) จนสำเร็จ → ความไม่ย่อท้อทำให้สำเร็จ"}, {"n": "44", "alt": "", "d": "", "g": 7, "s": "<p>What is the main purpose of the first paragraph?<\/p>", "o": ["To describe how onions are grown", "To warn people not to cut onions", "To compare onions with other vegetables", "To explain the process that causes tears"], "note": "", "t": "Reading", "a": 4, "x": "ย่อหน้าแรกอธิบายกระบวนการทางเคมีทีละขั้นที่ทำให้น้ำตาไหล"}, {"n": "45", "alt": "", "d": "", "g": 7, "s": "<p>Why does a sharp knife help?<\/p>", "o": ["It breaks open fewer cells.", "It makes the onion colder.", "It removes the acid from the onion.", "It cuts the onion faster than the gas can spread."], "note": "", "t": "Reading", "a": 1, "x": "\"it damages fewer cells\""}, {"n": "46", "alt": "", "d": "", "g": 7, "s": "<p>The word \"<b>mild<\/b>\" is closest in meaning to ________.<\/p>", "o": ["strong", "sweet", "weak", "dangerous"], "note": "", "t": "Reading", "a": 3, "x": "mild acid = กรดอ่อน ๆ (weak)"}, {"n": "47", "alt": "", "d": "", "g": 8, "s": "<p>Which of the following is <b>NOT<\/b> mentioned as a benefit of a 15-minute city?<\/p>", "o": ["Cleaner air", "Cheaper housing", "More free time", "Closer relationships between neighbours"], "note": "", "t": "Reading", "a": 2, "x": "ผู้สนับสนุนพูดถึงอากาศสะอาด เวลาว่างเพิ่ม และเพื่อนบ้านรู้จักกัน แต่ไม่ได้พูดถึงที่อยู่อาศัยราคาถูก"}, {"n": "48", "alt": "", "d": "", "g": 8, "s": "<p>According to the critics, why might the idea be difficult in some cities?<\/p>", "o": ["Professor Moreno lives in Paris.", "People there do not like walking.", "There are too many parks.", "The cities were designed mainly for cars."], "note": "", "t": "Reading", "a": 4, "x": "\"cities that were built around cars\""}, {"n": "49", "alt": "", "d": "", "g": 8, "s": "<p>What is the writer's attitude in this passage?<\/p>", "o": ["Balanced, presenting both sides", "Uninterested in city planning", "Completely in favour of the idea", "Strongly against the idea"], "note": "", "t": "Reading", "a": 1, "x": "ย่อหน้าแรกให้ข้อดี ย่อหน้าที่สองให้ข้อโต้แย้ง → นำเสนอทั้งสองด้านอย่างสมดุล"}, {"n": "50", "alt": "", "d": "", "g": 9, "s": "<p>Which team <b>can<\/b> take part in the science fair?<\/p>", "o": ["Two M.4 students who want to use recycled paper", "Five M.2 students who registered on 10 November", "Three M.1 students who sent their proposal on 25 November", "A single M.3 student with a great idea"], "note": "", "t": "Notices & charts", "a": 3, "x": "ทีม 2–4 คน ชั้น ม.1–ม.3 และส่ง proposal ก่อน 29 พ.ย. (ข้อ 2 คนเกิน, ข้อ 4 คนเดียว, ข้อ 1 อยู่ ม.4)"}, {"n": "51", "alt": "", "d": "", "g": 10, "s": "<p>According to the chart, which statement is <b>CORRECT<\/b>?<\/p>", "o": ["Students spent more time on screens on weekdays than on weekends.", "In 2024, students used screens twice as long on weekends as on weekdays.", "Weekday screen time stayed the same from 2023 to 2025.", "Weekend screen time rose by three hours between 2023 and 2025."], "note": "", "t": "Notices & charts", "a": 4, "x": "วันหยุด: 4 ชม. (2023) → 7 ชม. (2025) เพิ่ม 3 ชั่วโมง (ข้อ 2 ผิด 6 ไม่ใช่ 2 เท่าของ 4)"}, {"n": "52", "alt": "", "d": "", "g": 10, "s": "<p>What conclusion can <b>best<\/b> be drawn from the chart?<\/p>", "o": ["Weekend screen time is decreasing every year.", "Screen time among M.1 students has been increasing.", "Screen time will definitely fall in 2026.", "Students no longer use screens on weekdays."], "note": "", "t": "Notices & charts", "a": 2, "x": "ทั้งวันธรรมดาและวันหยุดเพิ่มขึ้นทุกปี (ข้อ 3 สรุปเกินข้อมูล)"}, {"n": "53", "alt": "", "d": "", "g": 11, "s": "<p>Which student is following the rules?<\/p>", "o": ["Beam, who walked in and started printing without booking", "Tan, who printed for three hours this week", "Fah, who has finished the safety training and booked yesterday for today", "Nut, who opened the printer to fix a problem himself"], "note": "", "t": "Notices & charts", "a": 3, "x": "ผ่านการอบรมความปลอดภัยแล้ว และจองล่วงหน้า 1 วัน ตรงตามกฎ"}, {"n": "54", "alt": "", "d": "", "g": 12, "s": "<p>What will happen to an item that nobody claims?<\/p>", "o": ["It will be thrown away.", "It will be sold at the next concert.", "It will be kept by Mr. Krit.", "It will be donated."], "note": "", "t": "Notices & charts", "a": 4, "x": "\"will be given to charity\" = นำไปบริจาค"}, {"n": "55", "alt": "", "d": "Directions: Choose the underlined part which contains an error.", "g": -1, "s": "<p>Hardly <u>had<\/u><sup>(1)<\/sup> we <u>sat down<\/u><sup>(2)<\/sup> for dinner <u>when<\/u><sup>(3)<\/sup> the phone <u>was ringing<\/u><sup>(4)<\/sup>.<\/p>", "o": ["<u>had<\/u>", "<u>sat down<\/u>", "<u>when<\/u>", "<u>was ringing<\/u>"], "note": "", "t": "Tenses", "a": 4, "x": "เหตุการณ์สั้นที่แทรกเข้ามา (Hardly … when …) ใช้ Past Simple → rang"}, {"n": "56", "alt": "", "d": "", "g": -1, "s": "<p>Neither of the twins <u>have<\/u><sup>(1)<\/sup> <u>ever<\/u><sup>(2)<\/sup> been <u>abroad<\/u><sup>(3)<\/sup>, but both of them <u>speak<\/u><sup>(4)<\/sup> excellent English.<\/p>", "o": ["<u>have<\/u>", "<u>ever<\/u>", "<u>abroad<\/u>", "<u>speak<\/u>"], "note": "", "t": "Nouns, pronouns & agreement", "a": 1, "x": "Neither of + นามพหูพจน์ ใช้กริยาเอกพจน์ → has"}, {"n": "57", "alt": "", "d": "", "g": -1, "s": "<p>The coach <u>made<\/u><sup>(1)<\/sup> us <u>to run<\/u><sup>(2)<\/sup> around the field ten times <u>because<\/u><sup>(3)<\/sup> we <u>had arrived<\/u><sup>(4)<\/sup> late.<\/p>", "o": ["<u>made<\/u>", "<u>to run<\/u>", "<u>because<\/u>", "<u>had arrived<\/u>"], "note": "", "t": "Gerund & infinitive", "a": 2, "x": "make + someone + V1 (ไม่มี to) → made us run"}, {"n": "58", "alt": "", "d": "", "g": -1, "s": "<p>This is <u>by far<\/u><sup>(1)<\/sup> the <u>most<\/u><sup>(2)<\/sup> <u>interestingest<\/u><sup>(3)<\/sup> book I have <u>ever<\/u><sup>(4)<\/sup> read.<\/p>", "o": ["<u>by far<\/u>", "<u>most<\/u>", "<u>interestingest<\/u>", "<u>ever<\/u>"], "note": "", "t": "Adjectives, adverbs & comparison", "a": 3, "x": "ขั้นสูงสุดของ interesting คือ the most interesting (ห้ามเติม -est ซ้อน)"}, {"n": "59", "alt": "", "d": "", "g": -1, "s": "<p><u>Despite<\/u><sup>(1)<\/sup> it was raining <u>heavily<\/u><sup>(2)<\/sup>, thousands of fans <u>waited<\/u><sup>(3)<\/sup> outside the stadium <u>for<\/u><sup>(4)<\/sup> hours.<\/p>", "o": ["<u>Despite<\/u>", "<u>heavily<\/u>", "<u>waited<\/u>", "<u>for<\/u>"], "note": "", "t": "Linking words & prepositions", "a": 1, "x": "ตามด้วยประโยค (it was raining) ต้องใช้ Although (Despite ตามด้วยคำนาม/V-ing)"}, {"n": "60", "alt": "", "d": "", "g": -1, "s": "<p>\"Success is not final; failure is not fatal: it is the courage <u>to continue<\/u><sup>(1)<\/sup> that <u>count<\/u><sup>(2)<\/sup>.\" This famous quote <u>reminds<\/u><sup>(3)<\/sup> us that we should never <u>give up<\/u><sup>(4)<\/sup> easily.<\/p>", "o": ["<u>to continue<\/u>", "<u>count<\/u>", "<u>reminds<\/u>", "<u>give up<\/u>"], "note": "", "t": "Nouns, pronouns & agreement", "a": 2, "x": "ประธานคือ the courage (เอกพจน์) → that counts"}], "src": "claude", "id": "ep1", "title": "ข้อสอบคาดการณ์ระดับ EP · ชุดที่ 1", "sub": "แต่งโดย Claude ตามโครงสร้าง Pre-Test ห้องพิเศษล่าสุด (60 ข้อ) ปรับระดับให้ยากขึ้น · ไม่ใช่ข้อสอบจริง", "key": "ข้อสอบและเฉลยแต่งโดย Claude"}]</script>
+<script>
+(function(){
+const SETS = JSON.parse(document.getElementById('data').textContent);
+const KEY = 'samsen-eng-ep-v1';
+const app = document.getElementById('app');
+function load(){ try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e){ return {}; } }
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(store)); } catch(e){} }
+let store = load(); store.sets = store.sets || {}; store.mode = store.mode || 'practice';
+let S = null, timerId = null, filter = 'wrong';
+const $ = (h) => { const t=document.createElement('template'); t.innerHTML=h.trim(); return t.content.firstChild; };
+const esc = (s) => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const setOf = id => SETS.find(s => s.id === id);
+const rec = id => (store.sets[id] = store.sets[id] || {});
+const yearOf = s => (s.title.match(/20\d\d/)||[''])[0];
+const shortTitle = s => s.title;
+const qLabel = q => q.alt ? `${q.n} (${q.alt})` : q.n;
+const fmt = sec => { sec=Math.max(0,Math.round(sec)); const m=Math.floor(sec/60), s=sec%60; return m+':'+String(s).padStart(2,'0'); };
+
+/* ---------- home ---------- */
+function home(){
+  stopTimer(); S = null; window.scrollTo(0,0);
+  const m = store.mode;
+  let h = `<header class="mast"><span class="eyebrow">Predicted Exam · ระดับ EP</span>
+    <h1>ข้อสอบคาดการณ์ EP สามเสน</h1>
+    <p class="muted" style="margin:0">ข้อสอบ ${SETS.reduce((a,s)=>a+s.qs.length,0)} ข้อ วิเคราะห์จากแนวข้อสอบสามเสน 10 ชุด ใช้โครงสร้างห้องพิเศษล่าสุดแต่ปรับให้ยากขึ้นระดับ EP มีเฉลย คำอธิบาย และสรุปคะแนนแยกตามหมวด</p></header>
+    <div class="modes" role="group" aria-label="เลือกโหมด">
+      <button class="mode" id="m-practice" aria-pressed="${m==='practice'}"><b>โหมดฝึก</b><span>ตอบแล้วเห็นเฉลยและคำอธิบายทันที</span></button>
+      <button class="mode" id="m-exam" aria-pressed="${m==='exam'}"><b>โหมดสอบจริง</b><span>จับเวลา 1 นาทีต่อข้อ เห็นคะแนนเมื่อส่งคำตอบ</span></button>
+    </div>`;
+  let lastYear = '';
+  h += '<div>';
+  SETS.forEach(s => {
+    const y = '60 ข้อ · เวลา 60 นาที';
+    if (y !== lastYear){ if(lastYear) h+='</div>'; h += `<div class="year">${y}</div><div class="sets">`; lastYear = y; }
+    const r = store.sets[s.id] || {};
+    const n = s.qs.length;
+    const room = s.title;
+    let meta = `<span>${n} ข้อ</span>`;
+    if (r.last) meta += `<span>ล่าสุด <span class="score">${r.last.score}/${r.last.total}</span></span><span>ดีที่สุด <span class="score">${r.best}/${n}</span></span>`;
+    if (r.weak) meta += `<span>ควรทบทวน: ${esc(r.weak)}</span>`;
+    const p = r.prog;
+    let acts = '';
+    if (p) acts += `<button class="btn primary" data-act="resume" data-id="${s.id}">ทำต่อ (${Object.keys(p.ans).length}/${n})</button>`;
+    else acts += `<button class="btn primary" data-act="start" data-id="${s.id}">เริ่มทำ</button>`;
+    if (p) acts += `<button class="btn ghost" data-act="start" data-id="${s.id}">เริ่มใหม่</button>`;
+    if (r.wrong && r.wrong.length) acts += `<button class="btn ghost" data-act="wrong" data-id="${s.id}">ฝึกข้อที่ผิด (${r.wrong.length})</button>`;
+    h += `<article class="set"><div><h3>${esc(room)}</h3><div class="meta">${meta}</div></div><div class="acts">${acts}</div></article>`;
+  });
+  h += '</div></div>';
+  h += `<p class="foot">คะแนนและความคืบหน้าจะจำไว้ในเครื่องนี้เท่านั้น ถ้าเปลี่ยนเครื่องหรือล้างข้อมูลเบราว์เซอร์ คะแนนจะเริ่มใหม่ ข้อสอบชุดนี้ Claude แต่งขึ้นจากการวิเคราะห์แนวข้อสอบเก่า เป็นการคาดการณ์ ไม่ใช่ข้อสอบจริงหรือข้อสอบที่หลุดมาของโรงเรียน</p>`;
+  app.innerHTML = h;
+  app.querySelector('#m-practice').onclick = () => { store.mode='practice'; save(); home(); };
+  app.querySelector('#m-exam').onclick = () => { store.mode='exam'; save(); home(); };
+  app.querySelectorAll('[data-act]').forEach(b => b.onclick = () => {
+    const id = b.dataset.id, s = setOf(id), r = rec(id);
+    if (b.dataset.act === 'resume') begin(id, r.prog.mode, r.prog.idxs, r.prog);
+    else if (b.dataset.act === 'start') { delete r.prog; save(); begin(id, store.mode, s.qs.map((_,i)=>i)); }
+    else begin(id, 'practice', r.wrong.slice(), null, true);
+  });
+}
+
+/* ---------- session ---------- */
+function begin(id, mode, idxs, prog, wrongOnly){
+  const s = setOf(id);
+  S = prog ? {id, mode:prog.mode, idxs:prog.idxs, ans:prog.ans, cur:prog.cur||0, used:prog.used||0, wrongOnly:false}
+           : {id, mode, idxs, ans:{}, cur:0, used:0, wrongOnly:!!wrongOnly};
+  S.limit = S.mode==='exam' ? S.idxs.length*60 : 0;
+  S.t0 = Date.now();
+  if (S.mode==='exam') startTimer();
+  renderQ();
+}
+function persist(){
+  if (!S || S.wrongOnly) return;
+  const r = rec(S.id);
+  r.prog = {mode:S.mode, idxs:S.idxs, ans:S.ans, cur:S.cur, used:usedSec()};
+  save();
+}
+function usedSec(){ return S.used + (Date.now()-S.t0)/1000; }
+function startTimer(){ stopTimer(); timerId = setInterval(tick, 1000); }
+function stopTimer(){ if (timerId){ clearInterval(timerId); timerId=null; } }
+function tick(){
+  const el = document.getElementById('timer'); if(!el||!S) return;
+  const left = S.limit - usedSec();
+  el.textContent = fmt(left); el.classList.toggle('low', left < 120);
+  if (left <= 0){ finish(); }
+}
+
+function ctxHTML(s, q, i){
+  let h = '';
+  const prev = i>0 ? s.qs[S.idxs[S.cur-1]] : null;
+  if (q.d) h += `<p class="dir">${esc(q.d)}</p>`;
+  if (q.g >= 0){
+    const g = s.groups[q.g];
+    h += `<div class="ctx">${g.l?`<span class="lab">${esc(g.l)}</span>`:''}${g.h}</div>`;
+  }
+  return h;
+}
+function optsHTML(q, chosen, reveal){
+  return q.o.map((o,k) => {
+    const n = k+1; let cls = 'opt';
+    if (reveal){ if (n===q.a) cls+=' right'; else if (n===chosen) cls+=' wrong'; }
+    else if (n===chosen) cls+=' sel';
+    return `<button class="${cls}" data-n="${n}" ${reveal?'disabled':''} aria-label="ตัวเลือก ${n}"><span class="bub">${n}</span><span class="ot">${o}</span></button>`;
+  }).join('');
+}
+function fbHTML(q, chosen){
+  const ok = chosen===q.a;
+  const warn = /หมายเหตุ|กำกวม/.test(q.x);
+  return `<div class="fb ${ok?'ok':'no'}"><b>${ok?'ถูกต้อง':'ยังไม่ถูก · คำตอบคือข้อ '+q.a}</b><span>${q.x}</span>${warn?'<span class="warnline">⚠ ข้อนี้ข้อสอบต้นฉบับค่อนข้างกำกวม</span>':''}</div>`;
+}
+
+function renderQ(confirming){
+  const s = setOf(S.id), qi = S.idxs[S.cur], q = s.qs[qi];
+  const chosen = S.ans[qi];
+  const reveal = S.mode==='practice' && chosen != null;
+  const answered = Object.keys(S.ans).length;
+  const total = S.idxs.length;
+  const last = S.cur === total-1;
+  let h = `<div class="bar"><div class="in">
+      <button class="btn ghost" id="b-home" aria-label="กลับหน้าแรก">←</button>
+      <div class="t"><b>${esc(shortTitle(s))}${S.wrongOnly?' · ฝึกข้อที่ผิด':''}</b><small>ข้อที่ ${S.cur+1} จาก ${total} · ตอบแล้ว ${answered}</small></div>
+      ${S.mode==='exam'?`<span class="timer" id="timer">${fmt(S.limit-usedSec())}</span>`:''}
+    </div><div class="prog"><i style="width:${answered/total*100}%"></i></div></div>`;
+  h += ctxHTML(s, q, S.cur);
+  h += `<section class="q"><div class="qn">ข้อ ${esc(qLabel(q))}<span class="topic">${esc(q.t)}</span></div><div class="stem">${q.s}</div>
+        <div class="opts">${optsHTML(q, chosen, reveal)}</div>${q.note?`<p class="note">${esc(q.note)}</p>`:''}
+        ${reveal?fbHTML(q, chosen):''}</section>`;
+  h += `<div class="nav"><button class="btn" id="b-prev" ${S.cur===0?'disabled':''}>← ข้อก่อนหน้า</button>`;
+  if (last) h += `<button class="btn primary" id="b-finish">${S.mode==='exam'?'ส่งคำตอบ':'ดูผลคะแนน'}</button>`;
+  else h += `<button class="btn ${reveal||S.mode==='exam'?'primary':''}" id="b-next">ข้อต่อไป →</button>`;
+  h += `</div>`;
+  if (confirming){
+    const miss = total - answered;
+    h += `<div class="confirm" id="conf"><b>ส่งคำตอบเลยไหม?</b><span>${miss?`ยังไม่ได้ตอบ ${miss} ข้อ ข้อที่ไม่ได้ตอบจะนับเป็นผิด`:'ตอบครบทุกข้อแล้ว'}</span>
+      <div class="row"><button class="btn primary" id="c-yes">ส่งคำตอบ</button><button class="btn" id="c-no">กลับไปทำต่อ</button></div></div>`;
+  }
+  h += `<div class="grid" aria-label="ไปยังข้อ">${S.idxs.map((ix,k)=>{
+      const a=S.ans[ix]; let c='';
+      if (a!=null) c = S.mode==='practice' ? (a===s.qs[ix].a?'r':'w') : 'done';
+      if (k===S.cur) c+=' cur';
+      return `<button class="${c}" data-k="${k}">${esc(s.qs[ix].n)}</button>`; }).join('')}</div>`;
+  if (S.mode==='exam' && !last && !confirming) h += `<div class="nav"><span></span><button class="btn" id="b-finish">ส่งคำตอบ</button></div>`;
+  app.innerHTML = h;
+  app.querySelector('#b-home').onclick = () => { persist(); home(); };
+  app.querySelectorAll('.opt:not(:disabled)').forEach(b => b.onclick = () => {
+    S.ans[qi] = +b.dataset.n; persist();
+    if (S.mode==='exam'){ renderQ(); } else { renderQ(); }
+  });
+  const go = k => { S.cur = k; persist(); renderQ(); window.scrollTo(0,0); };
+  const p = app.querySelector('#b-prev'); if (p) p.onclick = () => go(S.cur-1);
+  const n = app.querySelector('#b-next'); if (n) n.onclick = () => go(S.cur+1);
+  app.querySelectorAll('.grid button').forEach(b => b.onclick = () => go(+b.dataset.k));
+  app.querySelectorAll('#b-finish').forEach(f => f.onclick = () => {
+    if (S.mode==='exam'){ renderQ(true); const c=document.getElementById('conf'); c && c.scrollIntoView({block:'center'}); }
+    else finish();
+  });
+  const y = app.querySelector('#c-yes'); if (y) y.onclick = finish;
+  const no = app.querySelector('#c-no'); if (no) no.onclick = () => renderQ();
+  if (S.mode==='exam') tick();
+}
+
+function finish(){
+  stopTimer();
+  const s = setOf(S.id);
+  const used = usedSec();
+  let score = 0; const wrong = [];
+  S.idxs.forEach(ix => { if (S.ans[ix]===s.qs[ix].a) score++; else wrong.push(ix); });
+  const r = rec(S.id);
+  if (!S.wrongOnly){
+    r.last = {score, total:S.idxs.length, at:Date.now(), mode:S.mode};
+    r.best = Math.max(r.best||0, score);
+    r.wrong = wrong;
+    delete r.prog;
+    const T = topicStats(s, S.idxs, S.ans);
+    const weak = T.filter(t=>t.n>=2 && t.c/t.n<0.6).sort((x,y)=>x.c/x.n-y.c/y.n).slice(0,2).map(t=>t.t);
+    r.weak = weak.join(', ');
+  } else {
+    r.wrong = (r.wrong||[]).filter(ix => !(S.ans[ix]===s.qs[ix].a));
+  }
+  save();
+  const done = {...S, score, wrongList:wrong, used};
+  S = null; filter = wrong.length ? 'wrong' : 'all';
+  result(done);
+}
+
+function topicStats(s, idxs, ans){
+  const m = {};
+  idxs.forEach(ix => { const q=s.qs[ix]; const k=q.t; m[k]=m[k]||{t:k,n:0,c:0}; m[k].n++; if(ans[ix]===q.a) m[k].c++; });
+  return Object.values(m).sort((a,b)=>b.n-a.n);
+}
+function result(R){
+  window.scrollTo(0,0);
+  const s = setOf(R.id), total = R.idxs.length, pct = Math.round(R.score/total*100);
+  const skipped = R.idxs.filter(ix => R.ans[ix]==null).length;
+  let h = `<header class="res-head"><span class="eyebrow">${esc(shortTitle(s))}${R.wrongOnly?' · ฝึกข้อที่ผิด':''}</span>
+    <div class="big">${R.score}<small> / ${total}</small></div>
+    <div class="stats"><span>${pct}%</span><span>ผิด ${total-R.score-skipped} ข้อ</span>${skipped?`<span>ไม่ได้ตอบ ${skipped} ข้อ</span>`:''}${R.mode==='exam'?`<span>ใช้เวลา ${fmt(R.used)} นาที</span>`:''}</div>
+    <div class="nav" style="justify-content:flex-start">
+      <button class="btn primary" id="r-home">กลับหน้าแรก</button>
+      ${R.wrongList.length?`<button class="btn" id="r-wrong">ฝึกข้อที่ผิดอีกรอบ</button>`:''}
+      <button class="btn ghost" id="r-again">ทำชุดนี้ใหม่</button></div></header>
+    <h2 style="font-size:1.1rem;margin-top:18px">คะแนนแยกตามหมวด</h2>
+    <div class="tops">${topicStats(s,R.idxs,R.ans).map(t=>`<div class="trow ${t.c/t.n<0.6?'weak':''}"><span>${esc(t.t)}</span><span class="tb"><i style="width:${t.c/t.n*100}%"></i></span><span class="tv">${t.c}/${t.n}</span></div>`).join('')}</div>
+    <p class="muted" style="font-size:.85rem;margin:2px 0 0">แถบสีแดง = ได้ต่ำกว่า 60% ควรทบทวนหมวดนั้น</p>
+    <div class="filters" role="group" aria-label="ตัวกรอง">
+      <button class="btn" data-f="wrong" aria-pressed="${filter==='wrong'}">เฉพาะข้อที่ผิด</button>
+      <button class="btn" data-f="all" aria-pressed="${filter==='all'}">ทุกข้อ</button></div><div class="rv">`;
+  R.idxs.forEach(ix => {
+    const q = s.qs[ix], a = R.ans[ix], ok = a===q.a;
+    if (filter==='wrong' && ok) return;
+    const tag = a==null ? '<span class="tag skip">ไม่ได้ตอบ</span>' : ok ? '<span class="tag ok">ถูก</span>' : `<span class="tag no">ตอบข้อ ${a}</span>`;
+    const g = q.g>=0 ? s.groups[q.g] : null;
+    h += `<section class="q"><div class="rvh"><span class="qn">ข้อ ${esc(qLabel(q))}</span>${tag}<span class="topic">${esc(q.t)}</span></div>
+      ${g?`<details class="ctxd"><summary>ดูบทอ่าน/รูปประกอบ</summary><div class="ctx" style="margin-top:8px">${g.h}</div></details>`:''}
+      <div class="stem">${q.s}</div><div class="opts">${optsHTML(q, a, true)}</div>${fbHTML(q, a)}</section>`;
+  });
+  if (filter==='wrong' && !R.wrongList.length) h += `<p class="muted">ถูกทุกข้อ เก่งมาก</p>`;
+  h += '</div>';
+  app.innerHTML = h;
+  app.querySelector('#r-home').onclick = home;
+  const w = app.querySelector('#r-wrong'); if (w) w.onclick = () => begin(R.id, 'practice', R.wrongList.slice(), null, true);
+  app.querySelector('#r-again').onclick = () => begin(R.id, R.wrongOnly?'practice':R.mode, R.wrongOnly?R.idxs:s.qs.map((_,i)=>i), null, R.wrongOnly);
+  app.querySelectorAll('[data-f]').forEach(b => b.onclick = () => { filter = b.dataset.f; result(R); });
+}
+window.addEventListener('pagehide', persist);
+home();
+})();
+</script>
+
+</body>
+</html>
